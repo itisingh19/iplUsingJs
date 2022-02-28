@@ -47,8 +47,8 @@
                 document.write(JSON.stringify(numberOfMatchesPlayedInEachSeason(data)));
                 document.write("<br/><br/>");
                 document.write(JSON.stringify(numberOfMatchesWonOfAllTeams(data)));
-                //document.write("<br/><br/>");
-                //document.write(JSON.stringify(countingTossWonOfAllTeamsAsCreateAScenario(data)));
+                document.write("<br/><br/>");
+                document.write(JSON.stringify(countingTossWonOfAllTeamsAsCreateAScenario(data)));
 
             };
 
@@ -92,7 +92,23 @@
         function topEconomicPlayerIn2015(){
 
         }
+        function countingTossWonOfAllTeamsAsCreateAScenario(dta){
+            const tossWonOfAllTeams = {};
+            for(var i=0; i < dta.length; i++){
+                if(tossWonOfAllTeams[dta[i].toss_winner] !== undefined){
+                    tossWonOfAllTeams[dta[i].toss_winner] += 1;
+                }
+                else{
+                    if(dta[i].toss_winner !== undefined){
+                        tossWonOfAllTeams[dta[i].toss_winner] = 1;
+                    }
+                } 
+            }
+            return tossWonOfAllTeams;
 
+
+        }
+        
         
 
 
