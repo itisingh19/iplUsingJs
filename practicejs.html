@@ -7,10 +7,12 @@
 
 <body>
     <form id="myForm0">
+        <h4>Add Matches File below.</h4>
         <input type="file" id="matchesCsvFile" accept=".csv" />
         <br />
+        <h4>Add Deliveries File below and then submit.</h4>
         <input type="file" id="deliveriesCsvFile" accept=".csv" />
-        <br />
+        <br /><br />
         <input type="submit" value="Submit" />
     </form>
 
@@ -35,7 +37,6 @@
                 }, {});
                 return el;
             });
-            console.log(arr);
             return arr;
         }
 
@@ -50,23 +51,26 @@
                 const matches = e.target.result;
                 const matchesData = csvToArray(matches);
 
-                //document.write(matchesData);
                 document.write(JSON.stringify(numberOfMatchesPlayedInEachSeason(matchesData)));
+
                 document.write("<br/><br/>");
                 document.write(JSON.stringify(numberOfMatchesWonOfAllTeams(matchesData)));
+
                 document.write("<br/><br/>");
                 document.write(JSON.stringify(countingTossWonOfAllTeamsAsCreateAScenario(matchesData)));
+
                 listOfMatchIdsFor2015(matchesData);
                 listOfMatchIdsFor2016(matchesData);
-                
+                document.write("<br/><br/>");
+
             };
-            readerForDeliveries.onload = function(e){
+            readerForDeliveries.onload = function (e) {
                 const delivery = e.target.result;
-                const deliveriesData = csvToArray(delivery)
-                //document.write(deliveryData);
+                const deliveriesData = csvToArray(delivery);
 
                 document.write(JSON.stringify(extraRunsConcededPerTeamIn2016(deliveriesData)));
-
+                document.write("<br/><br/>");
+                document.write(JSON.stringify(topEconomicPlayerIn2015(deliveriesData)));
             };
 
             readerForMatches.readAsText(matchesInput);
@@ -104,13 +108,12 @@
 
         function extraRunsConcededPerTeamIn2016(deliveryData) {
             const extraRunsOfAllTeamsIn2016 = {};
-            //const list2015 = listOfMatchIdsFor2015
-            for(var i =0; i < deliveryData.length; i++){
-                if(matchIdsFor2016.includes(deliveryData[i].match_id)){
-                    if(extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] !== undefined){
+            for (var i = 0; i < deliveryData.length; i++) {
+                if (matchIdsFor2016.includes(deliveryData[i].match_id)) {
+                    if (extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] !== undefined) {
                         extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] += parseInt(deliveryData[i].extra_runs);
                     }
-                    else{
+                    else {
                         extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] = parseInt(deliveryData[i].extra_runs);
                     }
                 }
@@ -118,7 +121,43 @@
             return extraRunsOfAllTeamsIn2016;
         }
 
-        function topEconomicPlayerIn2015() {
+        function topEconomicPlayerIn2015(deliveryData) {
+            const economicsOfAllPlayer = {};
+            const ballsPlayedByPlayer = {};
+            const topEconomicPlayer = {};
+            var playerName = "";
+
+            for (var i = 0; i < deliveryData.length; i++) {
+                if (matchIdsFor2015.includes(deliveryData[i].match_id)) {
+                    if (economicsOfAllPlayer[deliveryData[i].bowler] !== undefined) {
+                        economicsOfAllPlayer[deliveryData[i].bowler] += parseInt(deliveryData[i].total_runs) - parseInt(deliveryData[i].extra_runs);
+                    }
+                    else {
+                        economicsOfAllPlayer[deliveryData[i].bowler] = parseInt(deliveryData[i].total_runs) - parseInt(deliveryData[i].extra_runs);
+                    }
+                    //console.log(economicsOfAllPlayer)
+                    if (ballsPlayedByPlayer[deliveryData[i].bowler] !== undefined) {
+                        ballsPlayedByPlayer[deliveryData[i].bowler] += 1 / 6;
+                    }
+                    else {
+                        ballsPlayedByPlayer[deliveryData[i].bowler] = 1 / 6;
+                    }
+                }
+            }
+            keys = Object.keys(economicsOfAllPlayer);
+            keys.map(x => {
+                economicsOfAllPlayer[x] = (economicsOfAllPlayer[x] / ballsPlayedByPlayer[x]).toFixed(2);
+            })
+            value = Object.values(economicsOfAllPlayer);
+            economicRate = Number.MAX_VALUE;
+            keys.map(x => {
+                if (parseFloat(economicsOfAllPlayer[x]) < economicRate) {
+                    economicRate = parseFloat(economicsOfAllPlayer[x]);
+                    playerName = x;
+                }
+            })
+            topEconomicPlayer[playerName] = economicRate;
+            return (topEconomicPlayer);
 
         }
 
@@ -137,26 +176,24 @@
             return tossWonOfAllTeams;
         }
         const matchIdsFor2015 = [];
-        function listOfMatchIdsFor2015(matchData){
-            for (var i = 0; i < matchData.length; i++){
-                if(matchData[i].season === "2015"){
+        function listOfMatchIdsFor2015(matchData) {
+            for (var i = 0; i < matchData.length; i++) {
+                if (matchData[i].season === "2015") {
                     matchIdsFor2015.push(matchData[i].id);
                 }
             }
             return matchIdsFor2015;
         }
-        //console.log(matchIdsFor2015);
 
         const matchIdsFor2016 = [];
-        function listOfMatchIdsFor2016(matchData){
-            for (var i = 0; i < matchData.length; i++){
-                if(matchData[i].season === "2016"){
+        function listOfMatchIdsFor2016(matchData) {
+            for (var i = 0; i < matchData.length; i++) {
+                if (matchData[i].season === "2016") {
                     matchIdsFor2016.push(matchData[i].id);
                 }
             }
             return matchIdsFor2016;
         }
-        //console.log(matchIdsFor2016);
 
 
     </script>
