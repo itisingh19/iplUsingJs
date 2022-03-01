@@ -4,16 +4,22 @@
 <head>
 
 </head>
+
 <body>
     <form id="myForm0">
-        <input type="file" id="csvFile0" accept=".csv" />
+        <input type="file" id="matchesCsvFile" accept=".csv" />
+        <br />
+        <input type="file" id="deliveriesCsvFile" accept=".csv" />
         <br />
         <input type="submit" value="Submit" />
     </form>
-    
+
     <script>
         const myForm0 = document.getElementById("myForm0");
-        const csvFile0 = document.getElementById("csvFile0");
+        const matchesCsvFile = document.getElementById("matchesCsvFile");
+        const deliveriesCsvFile = document.getElementById("deliveriesCsvFile");
+        var list2015 = [];
+        var list2016 = [];
 
         function csvToArray(str, delimiter = ",") {
 
@@ -27,7 +33,6 @@
                     object[header] = values[index];
                     return object;
                 }, {});
-                //console.log(el);
                 return el;
             });
             console.log(arr);
@@ -36,80 +41,111 @@
 
         myForm0.addEventListener("submit", function (e) {
             e.preventDefault();
-            const input = csvFile0.files[0];
-            const reader = new FileReader();
+            const matchesInput = matchesCsvFile.files[0];
+            const deliveriesInput = deliveriesCsvFile.files[0];
+            const readerForMatches = new FileReader();
+            const readerForDeliveries = new FileReader();
 
-            reader.onload = function (e) {
-                const text = e.target.result;
-                const data = csvToArray(text);
+            readerForMatches.onload = function (e) {
+                const matches = e.target.result;
+                const matchesData = csvToArray(matches);
 
-                //document.write(data);
-                document.write(JSON.stringify(numberOfMatchesPlayedInEachSeason(data)));
+                //document.write(matchesData);
+                document.write(JSON.stringify(numberOfMatchesPlayedInEachSeason(matchesData)));
                 document.write("<br/><br/>");
-                document.write(JSON.stringify(numberOfMatchesWonOfAllTeams(data)));
+                document.write(JSON.stringify(numberOfMatchesWonOfAllTeams(matchesData)));
                 document.write("<br/><br/>");
-                document.write(JSON.stringify(countingTossWonOfAllTeamsAsCreateAScenario(data)));
+                document.write(JSON.stringify(countingTossWonOfAllTeamsAsCreateAScenario(matchesData)));
+                listOfMatchIdsFor2015(matchesData);
+                listOfMatchIdsFor2016(matchesData);
+                
+            };
+            readerForDeliveries.onload = function(e){
+                const delivery = e.target.result;
+                const deliveriesData = csvToArray(delivery)
+                //document.write(deliveryData);
+
+                document.write(JSON.stringify(extraRunsConcededPerTeamIn2016(deliveriesData)));
 
             };
 
-            reader.readAsText(input);
+            readerForMatches.readAsText(matchesInput);
+            readerForDeliveries.readAsText(deliveriesInput);
         });
-
-        function numberOfMatchesPlayedInEachSeason(dta){
-            const matchesPlayedInEachSeason = {};
-            for(var i=0; i < dta.length; i++){
-                if(matchesPlayedInEachSeason[dta[i].season] !== undefined){
-                    matchesPlayedInEachSeason[dta[i].season] += 1;
-                }
-                else{
-                    if(dta[i].season !== undefined){
-                        matchesPlayedInEachSeason[dta[i].season] = 1;
-                    }
-                }
-            }
-            return matchesPlayedInEachSeason;
+        function numberOfMatchesPlayedInEachSeason(matchData) {
+            
         }
-        
-        function numberOfMatchesWonOfAllTeams(dta){
+
+        function numberOfMatchesWonOfAllTeams(matchData) {
             const matchesWonOfAllTeams = {};
-            for(var i=0; i < dta.length; i++){
-                if(matchesWonOfAllTeams[dta[i].winner] !== undefined){
-                    matchesWonOfAllTeams[dta[i].winner] += 1;
+            for (var i = 0; i < matchData.length; i++) {
+                if (matchesWonOfAllTeams[matchData[i].winner] !== undefined) {
+                    matchesWonOfAllTeams[matchData[i].winner] += 1;
                 }
-                else{
-                    if(dta[i].winner !== undefined && dta[i].winner !== ""){
-                        matchesWonOfAllTeams[dta[i].winner] = 1;
+                else {
+                    if (matchData[i].winner !== undefined && matchData[i].winner !== "") {
+                        matchesWonOfAllTeams[matchData[i].winner] = 1;
                     }
-                } 
+                }
             }
             return matchesWonOfAllTeams;
         }
 
-        function extrarunsConcededPerTeamIn2016(){
-
-        }
-
-        function topEconomicPlayerIn2015(){
-
-        }
-        function countingTossWonOfAllTeamsAsCreateAScenario(dta){
-            const tossWonOfAllTeams = {};
-            for(var i=0; i < dta.length; i++){
-                if(tossWonOfAllTeams[dta[i].toss_winner] !== undefined){
-                    tossWonOfAllTeams[dta[i].toss_winner] += 1;
-                }
-                else{
-                    if(dta[i].toss_winner !== undefined){
-                        tossWonOfAllTeams[dta[i].toss_winner] = 1;
+        function extraRunsConcededPerTeamIn2016(deliveryData) {
+            const extraRunsOfAllTeamsIn2016 = {};
+            //const list2015 = listOfMatchIdsFor2015
+            for(var i =0; i < deliveryData.length; i++){
+                if(matchIdsFor2016.includes(deliveryData[i].match_id)){
+                    if(extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] !== undefined){
+                        extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] += parseInt(deliveryData[i].extra_runs);
                     }
-                } 
+                    else{
+                        extraRunsOfAllTeamsIn2016[deliveryData[i].batting_team] = parseInt(deliveryData[i].extra_runs);
+                    }
+                }
+            }
+            return extraRunsOfAllTeamsIn2016;
+        }
+
+        function topEconomicPlayerIn2015() {
+
+        }
+
+        function countingTossWonOfAllTeamsAsCreateAScenario(matchData) {
+            const tossWonOfAllTeams = {};
+            for (var i = 0; i < matchData.length; i++) {
+                if (tossWonOfAllTeams[matchData[i].toss_winner] !== undefined) {
+                    tossWonOfAllTeams[matchData[i].toss_winner] += 1;
+                }
+                else {
+                    if (matchData[i].toss_winner !== undefined) {
+                        tossWonOfAllTeams[matchData[i].toss_winner] = 1;
+                    }
+                }
             }
             return tossWonOfAllTeams;
-
-
         }
-        
-        
+        const matchIdsFor2015 = [];
+        function listOfMatchIdsFor2015(matchData){
+            for (var i = 0; i < matchData.length; i++){
+                if(matchData[i].season === "2015"){
+                    matchIdsFor2015.push(matchData[i].id);
+                }
+            }
+            return matchIdsFor2015;
+        }
+        //console.log(matchIdsFor2015);
+
+        const matchIdsFor2016 = [];
+        function listOfMatchIdsFor2016(matchData){
+            for (var i = 0; i < matchData.length; i++){
+                if(matchData[i].season === "2016"){
+                    matchIdsFor2016.push(matchData[i].id);
+                }
+            }
+            return matchIdsFor2016;
+        }
+        //console.log(matchIdsFor2016);
 
 
     </script>
